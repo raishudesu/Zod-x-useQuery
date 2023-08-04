@@ -28,7 +28,7 @@ const CatFactZod = () => {
     }
   };
   const {
-    isLoading,
+    isFetching,
     isSuccess,
     data: fact = null,
     refetch,
@@ -36,15 +36,16 @@ const CatFactZod = () => {
     queryKey: ["fact"],
     queryFn: getFacts,
     refetchOnWindowFocus: false,
+    enabled: false,
   });
 
   return (
     <div className="container">
       <div className="sub-container">
         <h1>Random Fact</h1>
-        {isLoading ? <BiLoaderAlt size={20} /> : null}
+        {isFetching ? <BiLoaderAlt size={20} /> : null}
         <p>{isSuccess ? fact?.fact : null}</p>
-        <button onClick={() => refetch()}>Next</button>
+        <button onClick={() => refetch()}>Randomize</button>
       </div>
     </div>
   );
