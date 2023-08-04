@@ -1,48 +1,63 @@
 import { useQuery } from "@tanstack/react-query";
 import { BiLoaderAlt } from "react-icons/bi";
-import { z } from "zod";
+import { z, ZodType } from "zod";
+import "../App.css";
 
 const CatFactsZod = () => {
-  type Facts = {
-    fact: string;
-    length: number;
-  };
-  const FactSchema = z.object({
-    fact: z.string(),
-    length: z.number(),
+  type FactSchemaType = ZodType<{
+    data: {
+      fact: string;
+      length: number;
+    }[];
+  }>;
+  const FactSchema: FactSchemaType = z.object({
+    data: z.array(z.object({ fact: z.string(), length: z.number() })),
   });
-
   const getFacts = async () => {
     try {
-      const res = await fetch("https://catfact.ninja/fact");
-      const data = await res.json();
+      const res = await fetch("https://catfact.ninja/facts");
+      const data = (await res.json()) as FactSchemaType;
       try {
-        const parsedData = FactSchema.parse(data) as Facts;
-        return parsedData;
+        const parsedData = FactSchema.parse(data);
+        return parsedData.data;
       } catch (error) {
         console.log("Data parsing error:", error);
         return null;
       }
     } catch (error) {
       console.log(error);
+      return null;
     }
   };
   const {
     isLoading,
     isSuccess,
-    data: fact = null,
-    refetch,
+    data: facts = [],
   } = useQuery({
-    queryKey: ["fact"],
+    queryKey: ["facts"],
     queryFn: getFacts,
     refetchOnWindowFocus: false,
   });
 
   return (
-    <div>
-      {isLoading ? <BiLoaderAlt size={20} /> : null}
-      <p>{isSuccess ? fact?.fact : null}</p>
-      <button onClick={() => refetch()}>Next</button>
+    <div className="container">
+      <div className="sub-container">
+        <h1>10 Facts</h1>
+        {isLoading ? <BiLoaderAlt size={30} /> : null}
+        <div className="list">
+          {isSuccess
+            ? facts?.map(({ fact }, index) => {
+                return (
+                  <div key={index}>
+                    <p>
+                      <span className="fact">Fact#{index + 1}:</span> {fact}
+                    </p>
+                  </div>
+                );
+              })
+            : null}
+        </div>
+      </div>
     </div>
   );
 };
